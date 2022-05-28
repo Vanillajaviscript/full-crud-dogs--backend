@@ -1,11 +1,15 @@
 const mongoose = require('mongoose');
 
+const connectDB = async () => {
+  try {
+    const conn = await mongoose.connect(process.env.DATABASE_URL)
+    console.log(`MongoDB Connected: ${conn.connection.host}`.cyan.underline);
+  } catch (error) {
+    console.log(`Error: ${error.message}`.red.underline.bold)
+    process.exit(1)
+  }
+}
 
-mongoose.connect(process.env.DATABASE_URL)
+module.exports = connectDB
 
-const db = mongoose.connection;
 
-// Check for DB connection status
-db.on("disconnected", () => console.log("MongoDB Disconnected!"));
-db.on("connected", () => console.log("MongoDB Connected!"));
-db.on("error", (err) => console.log(err.message + ""));

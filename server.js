@@ -1,23 +1,31 @@
 require('dotenv').config();
 const express = require('express');
+const colors = require('colors');
 const app = express();
 const logger = require('morgan');
 const cors = require('cors');
 const PORT = process.env.PORT || 3001;
-require('./config/connection');
+const connectDB = require('./config/connection');
 const Dogs = require('./models/dogSchema');
+const { errorHandler } = require('./middleware/errorMiddleware')
+connectDB();
+//middleware
 
+app.use(express.json());
+app.use(express.urlencoded({extended: true}));
+app.use('/users', require('./routes/userRoutes'))
 app.use(cors());
 app.use(logger('dev'));
-app.use(express.json());
-
+app.use(errorHandler)
+//check for user logged in
+//if user is not logged in redirect to log in screen
 app.get('/', (req, res) => {
-  res.json('root directory');
+  res.status(200).json({message: "Welcome to the China Dog Rescue!"});
 })
 
 app.get('/dogs', async(req, res) => {
   try {
-    res.json(await Dogs.find({}))
+    res.json(await (await Dogs.find({})).reverse())
   } catch (error) {
     res.status(400).json(error);
   }
@@ -45,7 +53,7 @@ app.put('/dogs/:id', async (req, res) => {
 app.post('/dogs', async (req, res) => {
   try{
     console.log(req.body)
-  res.json(await Dogs.create(req.body))
+  res.status(201).json(await Dogs.create(req.body))
   } catch (error) {
     res.status(400).json(error);
   }
